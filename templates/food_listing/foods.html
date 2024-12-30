@@ -1,0 +1,264 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block title %}Claim Foods {% endblock title %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/food_card.css' %}">
+
+<style type="text/css">
+	main{
+		width: 100vw;
+		height: 100vh;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding-top: 70px;
+	}
+	section h2 {
+	    color: var(--text-primary);
+	    margin-bottom: 1rem;
+	    font-size: 2.2rem;
+	    font-weight: 700;
+	    text-align: center;
+	    position: relative;
+	    padding-bottom: 1rem;
+	}
+
+	section h2::after {
+	    content: '';
+	    position: absolute;
+	    bottom: 0;
+	    left: 50%;
+	    transform: translateX(-50%);
+	    width: 80px;
+	    height: 3px;
+	    background: var(--dark-brown-color);
+	    border-radius: 2px;
+	}
+
+	.food-items-section{
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+    	height: 100%; /* Adjust height as needed */
+    	overflow-y: auto;
+	}
+
+	#map {
+	    height: 70vh;
+	    border-radius: 15px;
+	    box-shadow: 0 5px 20px rgb(0 0 0 / 10%);
+	    border: 4px solid white;
+	    transition: all 0.3s ease;
+	    overflow: hidden;
+	}
+
+	.col-lg-5{
+		width: 48% !important;
+	}
+
+	.food-items-section::-webkit-scrollbar {
+    	display: none;
+ 	}
+
+ 	.leaflet-control-zoom-in, .leaflet-control-zoom-out{
+		background-color: var(--dark-brown-color) !important;
+		border: 1px solid var(--light-brown-color) !important;
+		color: var(--text-light) !important;
+		font-weight: bold !important;
+	}
+	
+	.leaflet-control-zoom-in:hover, .leaflet-control-zoom-out:hover{
+		background-color: var(--light-brown-color) !important;
+		border: 1px solid var(--dark-brown-color) !important;
+		color: var(--dark-brown-color) !important;
+	}
+
+	@media (max-width: 992px){
+
+		.food-items-section{
+			justify-content: flex-start;
+			overflow-y: visible;		
+			gap: 10px;	
+		}
+
+		main{
+			padding-top: 7rem;
+		}
+
+		main.row{
+			margin: 0 !important;
+			justify-content: center;
+		}
+
+		.col-lg-5{
+			width: 32% !important;
+		}
+	}
+
+
+	@media (max-width: 767.98px) {
+
+		main{
+			padding-top: 8.5rem;
+		}
+
+		#map{
+			max-height: 50vh;
+			margin-bottom: 20px;
+		}
+
+		.col-12{
+			width: 100% !important;
+		}
+
+		.food-items-section{
+			overflow-y: visible;			
+		}
+		
+	}
+
+</style>
+
+
+<main class='container-fluid row'>
+
+	<!-- Map Section -->
+	<section class="map-section col-12 col-lg-6 mb-3 mb-lg-0">
+        <h2>Food Donations Near You</h2>
+        <div id="map"></div>
+    </section>
+	<!-- End Map Section -->
+
+	<!-- Food List Section -->
+	<section class="col-0 col-lg-6 food-items-section row" id="food-items-section">
+
+		<h2>Available Foods</h2>
+
+		<!-- Food Card -->
+		{% include 'inc/food_card.html' %}
+		{% include 'inc/food_card.html' %}
+		{% include 'inc/food_card.html' %}
+		{% include 'inc/food_card.html' %}
+		{% include 'inc/food_card.html' %}
+		{% include 'inc/food_card.html' %}
+		{% include 'inc/food_card.html' %}
+		{% include 'inc/food_card.html' %}
+		<!-- End Food Card -->
+
+	</section>
+	<!-- End Food List Section -->
+
+</main>
+
+<script type="text/javascript">
+	
+let map = L.map('map');
+let marker, circle, zoomed;
+let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute('content');
+
+map.setView([51.505, -0.09], 13);
+
+// Change the position of zoom controls to bottom-right
+map.zoomControl.setPosition('bottomleft');
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	maxZoom: 19,
+	attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+
+function fetch_success() {
+	marker = L.marker([lat, long]).addTo(map);
+	circle = L.circle([lat, long], { radius: accuracy }).addTo(map);
+
+	if(!zoomed){
+		zoomed = map.fitBounds(circle.getBounds());
+	}
+
+	map.setView([lat, long]);
+
+	// Create a custom control
+	if (!document.querySelector('.custom-button')) {
+		var CustomButton = L.Control.extend({
+		  options: {
+		    position: 'bottomright' // Position of the button
+		  },
+		  onAdd: function (map) {
+		    // Create a button element
+		    var button = L.DomUtil.create('button', 'custom-button');
+		    button.innerHTML = `<i class='fa-solid fa-location-crosshairs'></i>`;
+		    // button.innerHTML = `<i class='fa-solid fa-street-view'></i>`;
+		    button.classList.add('btn')
+		    button.classList.add('btn-primary')
+		    button.classList.add('rounded-circle')
+
+		    // Attach a click event
+		    L.DomEvent.on(button, 'click', function () {
+		      	map.setView([lat, long]);
+		    });
+
+		    return button;
+		  }
+		});
+
+		// Add the custom button to the map
+		map.addControl(new CustomButton());
+	}
+}
+
+function success(position) {
+	const lat = position.coords.latitude;
+	const long = position.coords.longitude;
+	const accuracy = 500;
+
+	console.log('Lat : ', lat);
+	console.log('Long : ', long);
+	
+	if(marker){
+		map.removeLayer(marker);
+		map.removeLayer(circle);
+	}
+
+	// Backend calling
+
+	fetch(`{% url 'nearest_foods' %}`, {
+		method: 'post',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': csrfToken
+		},
+		body: JSON.stringify({
+			latitude: lat,
+			longitude: long
+		})
+	})
+	.then(response => response.json())
+	.then(data => {
+		console.log('Data : ', data)
+		fetch_success();
+	})
+	.catch(error=> {
+		console.log('Error : ', error)
+	})
+
+	// End Backend calling
+	
+}
+
+function error(error) {
+	console.log(error, document.getElementsByTagName('main'))
+	if (error.code == 1) {
+		document.getElementsByTagName('main')[0].innerHTML = `<center><h1>Please allow the location permission.</h1></center>`;
+	} else {
+		document.getElementsByTagName('main')[0].innerHTML = `<center><h1>Doesn't support locatinon.</h1></center>`;
+	}
+}
+
+navigator.geolocation.getCurrentPosition(success, error, {
+	enableHighAccuracy : true,
+});
+
+</script>
+
+{% endblock content %}

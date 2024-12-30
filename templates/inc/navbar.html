@@ -1,0 +1,47 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top shadow">
+	<div class="container-fluid">
+		<div class="navbar-logo">
+			<img src="{% static 'images/food1.jpg' %}" width="35" height="35" class="logo-img rounded-circle">
+		<a class="navbar-brand" href="#">Food4neighbour's</a>
+		</div>
+
+	<ul class="navbar-nav nav-menu order-2 order-md-2 order-lg-1">
+	    <li class="nav-item">
+	      <a class="nav-link" href="#">Home</a>
+	    </li>
+	    <li class="nav-item">
+	      <a class="nav-link active" href="#">Claim</a>
+	    </li>
+	    <li class="nav-item">
+	      <a class="nav-link" href="#">Donate</a>
+	    </li>
+	    <li class="nav-item">
+	      <a class="nav-link" href="#">AboutUs</a>
+	    </li>
+	</ul>
+	<!-- <div> -->
+	<div class="navbar-nav order-3 order-lg-2">
+	    <div class="nav-item" id="search-group">
+	    	<input type="text" class="form-control" name="search-food" placeholder="Search foods..">
+	      	<i class="fa-solid fa-magnifying-glass"></i>
+	    </div>
+	</div>
+
+	<ul class="navbar-nav navbar-icons order-1 order-lg-3">
+	    <li class="nav-item">
+	      <a class="nav-link position-relative" href="#">
+	      	<p class="badge bg-danger rounded-circle" id="notification-count">0</p>
+	      	<i class="fa-solid fa-bell"></i>
+	      </a>
+	    </li>
+	    <li class="nav-item">
+	      <a class="nav-link" href="#">
+	      	<i class="fa-solid fa-circle-user"></i>
+	      </a>
+	    </li>
+	</ul>
+	<!-- </div> -->
+
+	</div>
+</nav>
